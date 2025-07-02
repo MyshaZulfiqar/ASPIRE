@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> QR Scan test Code </title>
+        <script src= "https://unpkg.com/html5-qrcode"> </script>
+        <style> 
+            #scanner {
+                width: 300px;
+                margin: 10px;
+            }
+
+            .btn {
+                padding: 10;
+            }
+
+
+        </style>
+    </head>
+    <body>
+        <div id = scanner></div>
+        <button class="button" onclick="StartScan()">Start Scan</button>
+        <p id="status"></p>
+        <script>
+
+            function getLocation(callback){
+                if (navigator.geolocation){
+                    navigator.geolocation.getCurrentPosition(
+                        position =>{
+                            callback({
+                                lat: position.coords.latitude,
+                                long: position.coords.longitude
+                            });    
+                        }, 
+                    () => alert('Geolocation Failed')
+                    );
+
+                } else{
+                    alert("Geo Location Not Found")
+
+                }
+            }
+
+            let data = null;
+            function StartScan(){
+                const scan = new Html5Qrcode("scanner");
+
+                scan.start(
+
+                    {facingMode: "environment"}, 
+                    
+                    {fps: 10, qrbox: 250},
+                    
+                    (decodedText, decodedResult) => {
+                    scan.stop();
+                    data = {code:decodedText, decodedResult};
+                    document.getElementById("status").innerText = "Scanned Successfully"+decodedText;
+                    },
+
+                    (errMsg)=> {
+                        console.warn("Scanning Failed", errMsg) 
+                    }
+                );
+            }
+        </script>
+    </body>
+    
+</html>

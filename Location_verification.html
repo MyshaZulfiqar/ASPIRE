@@ -1,0 +1,126 @@
+<!-- skeleton of the code:
+    1. User scans a barcode at the checkin
+    2. Its checkin location is captured
+    3. User scans a barcode at the checkout
+    4. Its checout location is captured
+    5. Returns true if both locations are the same upto 3 dp otherwise returns false
+    
+    hmtl5-qrcode library: https://unpkg.com/html5-qrcode
+    location comparison logic
+
+    have to implement this in the form of an application 
+    -->
+
+
+<!DOCTYPE html>
+<html> 
+    <head>  
+        <title> Barcode Scanner testing </title>
+        <script src = "https://unpkg.com/html5-qrcode"></script>
+        <style>
+            #scanner {
+                width: 300px;
+                margin: 10px;
+            }
+
+            .btn {
+                margin: 10px;
+                padding: 10px
+
+            }
+        </style>
+    </head>
+        <h2> Barcode Location Validator </h2>
+        
+    <body>
+        <div id="scanner"> </div>
+        <button class="btn" onclick="StartScan('checkin')">Scan Check In</button>
+        <button class="btn" onclick="StartScan('checkout')"> Scan Check Out</button>
+        <p id = 'status'></p> 
+        
+        <script>
+            let checkInLoc = null;
+            let checkOutLoc = null;
+
+            function getLocation(callback){
+                if (navigator.geolocation){
+                    navigator.geolocation.getCurrentPosition(
+                        position =>{
+                            callback({
+                                lat: position.coords.latitude,
+                                long: position.coords.longitude
+                            });
+                        },
+                    () => alert('Geolocation Failed')    
+                    ); }
+                    else { 
+                        alert('Geo location not supported');
+                    }
+               
+            }
+
+            function StartScan(type){
+                const scan = new Html5Qrcode("scanner"); <!-- creates a new instance of scanner-->
+                scan.start(
+                    {facingMode: "environment"},
+                    {fps: 10, qrbox: 250},
+                    (decodedText, decodedResult) => {
+
+                    scan.stop();
+                    getLocation(pos =>{
+                        if(type =='checkin'){
+                            checkInLoc = {code: decodedText, pos};
+                            document.getElementById("status").innerHTML = "Checked In!";
+
+                        }
+                        else if (type == 'checkout'){
+                            checkOutLoc = {code: decodedText, pos};
+                            document.getElementById("status").innerHTML = "Checked Out!";
+                        }
+                        validLocations();
+                        })
+                    },
+
+                    (errMsg)=>{
+                        console.log("Error!", errMsg)
+                    }
+                );
+                
+            }
+
+            function validLocations(){
+                const status = document.getElementById("status");
+
+                if (checkInLoc && checkOutLoc){
+                    const dist = getDistance(checkInLoc.pos, checkOutLoc.pos);
+                    
+                    if (dist<0.5){
+                        status.innerText = "Same Locations! Form submitted";
+                    }
+                    else{
+                        status.innerText = "Different Locations! Form not submitted";
+                    }
+                }
+                else{
+                    status.innerText = "Either Check In or Check Out missing!";
+                }
+            }
+            
+            function getDistance(loc1, loc2) {
+                const toRad = x => (x * Math.PI) / 180;
+                const R = 6371; // Earth's radius in km
+
+                const dLat = toRad(loc2.lat - loc1.lat);
+                const dLon = toRad(loc2.long - loc1.long);
+
+                const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(loc1.lat)) * Math.cos(toRad(loc2.lat)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
+            }
+        </script>
+    </body>
+</html>

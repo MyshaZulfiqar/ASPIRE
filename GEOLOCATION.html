@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <p>
+            Displaying location using Latitude and Longitude
+        </p>
+        <button class = "ASPIRE" onclick="getLocation()">
+            Click Me
+        </button>
+        <p id ="try1"></p>
+
+        <script>
+            let variable1 = document.getElementById("try1");
+            function getLocation(){
+                navigator.geolocation.getCurrentPosition(showLoc);
+            }
+            
+            function showLoc(pos){
+                variable1.innerHTML =
+                "Latitude: " +
+                pos.coords.latitude +
+                "<br>Longitude: " +
+                pos.coords.logitude;
+            }
+
+        </script>
+    </body>
+</html>
+

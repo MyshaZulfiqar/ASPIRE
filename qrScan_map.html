@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> QR Scan test Code </title>
+        <script src= "https://unpkg.com/html5-qrcode"> </script>
+        <script src = "https://maps.google.com/maps/api/js?sensor=false" ></script> 
+        <style> 
+            #scanner {
+                width: 300px;
+                margin: 10px;
+            }
+
+            .btn {
+                padding: 10;
+            }
+
+
+        </style>
+    </head>
+    <body>
+        <div id="try2" style="width: 500px; height: 500px"></div>
+        <div id = scanner></div>
+        <button class="button" onclick="StartScan()">Start Scan</button>
+        <p id="status"></p>
+        <script>
+
+            function getLocation(callback){
+                if (navigator.geolocation){
+                    navigator.geolocation.getCurrentPosition(
+                        position =>{
+                            callback({
+                                lat: position.coords.latitude,
+                                long: position.coords.longitude
+                            });    
+                        }, 
+                    () => alert('Geolocation Failed')
+                    );
+
+                } else{
+                    alert("Geo Location Not Found")
+
+                }
+            }
+
+            let data = null;
+            function StartScan(){
+                const scan = new Html5Qrcode("scanner");
+
+                scan.start(
+
+                    {facingMode: "environment"}, 
+                    
+                    {fps: 10, qrbox: 250},
+                    
+                    (decodedText, decodedResult) => {
+
+                    scan.stop();
+                    
+                    getLocation(loc =>{
+                        data = { code: decodedText, decodedResult, loc};
+                        document.getElementById("status").innerText = "Scanned....Loading the Map";
+                        showMap(loc.lat, loc.long);}
+                    );
+                    },
+
+                    (errMsg) => {
+                        console.warn("Scanning Failed", errMsg) 
+                    }
+                );
+            }
+
+            function showMap(lat, long){
+                var lattlong = new google.maps.LatLng(lat, long); 
+                        
+                    var OPTions = {
+                        center: lattlong,
+                        zoom: 10,
+                        mapTypeControl: true,
+                        navigationControlOptions: {
+                            style: google.maps.NavigationControlStyle.SMALL,
+                    },
+
+                    };
+
+                    var mapg = new google.maps.Map(
+                        document.getElementById("try2"),
+                        OPTions
+                    );
+
+                    var markerg = new google.maps.Marker({
+                        position: lattlong,
+                        map: mapg,
+                        title: "You are here"
+                    }
+                       
+                    );
+                
+            }
+        </script>
+    </body>
+    
+</html>
