@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login/Register</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://www.payette.com/wp-content/uploads/2019/02/aku_legacy_banner.jpg') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .panel {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      width: 40%;
+      max-width: 400px;
+      margin-left: 60px;
+      padding: 40px;
+      border-radius: 10px;
+    }
+
+    .panel h1 {
+      font-size: 32px;
+      margin-bottom: 30px;
+    }
+
+    input[type='text'],
+    input[type='password'],
+    input[type='email'],
+    input[type=number] {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #ddd;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      background-color: #ffffff;
+      border: none;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #e6e6e6;
+    }
+
+    .bottom-text {
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: center; 
+    }
+
+    .bottom-text a {
+      color: white;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #errorMessage, #message {
+      color: red;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 5px;
+      text-align: center; 
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- LOGIN PANEL -->
+  <div class="panel" id="login-panel">
+    <h1>Check-In</h1>
+    <input type="text" id="login-username" placeholder="Username"/>
+    <input type="password" id="login-password" placeholder="Password"/>
+    <div id="errorMessage"></div>
+    <button class="button" onclick="LoginUser()">Sign In ➜</button>
+    <div class="bottom-text">
+      Don't have an account? <a onclick="showRegister()">Register</a>
+    </div>
+  </div>
+
+  <!-- register panel -->
+  <div class="panel hidden" id="register-panel">
+
+    <h1>Create Account</h1>
+    <input type="text" id="register-username" placeholder="Name" />
+    <input type="email" id="register-email" placeholder="Email(@aku.edu)" />
+    <input type="password" id="register-password" placeholder="Password" />
+    <input type="number" id="register-phone" placeholder="Phone Number" />
+
+    <div id="message"></div>
+    <button class="button" onclick="registerUser()">Register ➜</button>
+    <div class="bottom-text">
+      Already have an account? <a onclick="showLogin()">Login</a>
+    </div>
+
+    <!-- verification box -->
+    <div id="verificationArea" style="display:none;">
+    <input type="text" id="verificationCode" placeholder="Enter verification code" />
+    <button class="button" onclick="submitCode()">Submit Code ➜</button>
+    </div>
+  </div>
+
+  
+  <script>
+    let tempUser = {};
+    function showRegister() {
+      document.getElementById("login-panel").classList.add("hidden");
+      document.getElementById("register-panel").classList.remove("hidden");
+      clearMessages();
+    }
+
+    function showLogin() {
+      document.getElementById("register-panel").classList.add("hidden");
+      document.getElementById("login-panel").classList.remove("hidden");
+      clearMessages();
+    }
+
+    function clearMessages() {
+      document.getElementById("errorMessage").innerText = "";
+      document.getElementById("message").innerText = "";
+    }
+
+    //at the time of login, verify the username and email ID
+    function LoginUser() {
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+
+      google.script.run.withSuccessHandler(function(output) {
+        if (output === 'TRUE') {
+          const url1 = 'https://docs.google.com/forms/d/17HQob9XW0k2ZAXl2xmS8BUeZDt05g99iGNAOJZ2Rr8Q/edit';
+          const winRef = window.open(url1);
+          winRef ? google.script.host.close() : window.location.href = url1;
+        } else {
+          document.getElementById("errorMessage").innerText = "Username or Password Not Correct";
+        }
+      }).checkLogin(username, password);
+    } 
+
+    /*function LoginUser(){
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+
+      google.script.run.withSuccessHandler(function(response){
+        console.log("Server response:", response);
+        if (response.status == "VERIFY"){
+          document.getElementById("errorMessage").style.color = "green";
+          document.getElementById("errorMessage").innerText =
+          "Verification code sent to your email.";
+          document.getElementById("verificationArea").style.display = "block";
+        }
+
+        else if (response.status == "NO EMAIL FOUND") {
+          document.getElementById("errorMessage").innerText = "No email found for this user.";
+        }
+
+        else {
+          document.getElementById("errorMessage").innerText = "Invalid username or password.";
+        }
+
+      }).checkLogin(username, password);
+    }*/
+
+    
+   //to register new user with valid aku.edu email
+    function registerUser() {
+        const name = document.getElementById("register-username").value;
+        const email = document.getElementById("register-email").value;
+        const password = document.getElementById("register-password").value;
+        const phone = document.getElementById("register-phone").value;
+        const messageDiv = document.getElementById("message");
+        /*
+        let username = name.replace(/</gi, "");
+        username = username.replace(/>/gi, "");
+        username = username.replace(/-/gi, "");
+        alert(username);
+        */
+
+        if (!name || !email || !password || !phone) {
+          messageDiv.innerText = "Please fill all fields.";
+          return;
+        }
+
+        if (!email.endsWith("@aku.edu")) {
+          message.innerText = "Only AKU email addresses are allowed (must end with @aku.edu).";
+          return;
+        }
+
+        //password strength regex:
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+        if (!passwordRegex.test(password)) {
+          messageDiv.innerText = "Password must be at least 8 characters long and include at least one number, one special character, and one uppercase letter.";
+          return;
+        }
+
+        if (phone.length !== 11 || !/^\d{11}$/.test(phone)) {
+          messageDiv.innerText = "Phone number must be exactly 11 digits.";
+          return;
+        }
+
+        tempUser ={name,email,password,phone};
+        google.script.run.withSuccessHandler(function(sent){
+          if (sent.status == "SENT") {
+            messageDiv.style.color = "lightgreen";
+            messageDiv.innerText = "Verification code sent to your email.";
+            document.getElementById("verificationArea").style.display = "block";
+          } else {
+            messageDiv.style.color = "red";
+            messageDiv.innerText = "Failed to send verification email.";
+          }
+        }).sendVerificationCode(email);
+
+        /*
+        google.script.run.withSuccessHandler(() => {
+          messageDiv.style.color = "lightgreen";
+          messageDiv.innerText = "Account created successfully!";
+          setTimeout(() => {
+            showLogin();
+          }, 1000);
+        }).AddRecord(name, password, email, phone);*/
+  }
+
+  function submitCode(){
+        const user = tempUser;
+        const code = document.getElementById("verificationCode").value;
+
+        google.script.run.withSuccessHandler(function(valid) {
+        if (valid) {
+          google.script.run.withSuccessHandler(function() {
+            messageDiv.style.color = "lightgreen";
+            messageDiv.innerText = "Account created successfully!";
+            setTimeout(() => {
+              showLogin();
+              document.getElementById("verificationArea").style.display = "none";
+            }, 1000);
+          }).AddRecord(tempUser.name, tempUser.password, tempUser.email, tempUser.phone);
+        } else {
+          messageDiv.style.color = "red";
+          messageDiv.innerText = "Incorrect verification code.";
+        }
+      }).verifyCode(tempUser.email, code);
+  }
+  </script>
+</body>
+</html>
