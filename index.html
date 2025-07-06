@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  
+  <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login/Register</title>
   <style>
@@ -14,21 +14,25 @@
       font-family: 'Segoe UI', sans-serif;
       background: url('https://www.payette.com/wp-content/uploads/2019/02/aku_legacy_banner.jpg') no-repeat center center fixed;
       background-size: cover;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
+      padding: 20px;
+      flex-direction: column;
     }
+
 
     .panel {
       background-color: rgba(0, 0, 0, 0.5);
       color: #fff;
-      width: 40%;
+      width: 90%;
       max-width: 400px;
-      margin-left: 60px;
-      padding: 40px;
+      padding: 20px;
+      margin: auto;
       border-radius: 10px;
     }
+
 
     .panel h1 {
       font-size: 32px;
@@ -150,7 +154,7 @@
       document.getElementById("message").innerText = "";
     }
 
-    //at the time of login, verify the username and email ID
+    /*/at the time of login, verify the username and email ID
     function LoginUser() {
       const username = document.getElementById("login-username").value;
       const password = document.getElementById("login-password").value;
@@ -164,33 +168,46 @@
           document.getElementById("errorMessage").innerText = "Username or Password Not Correct";
         }
       }).checkLogin(username, password);
-    } 
+    } */
 
-    /*function LoginUser(){
+    function LoginUser() {
       const username = document.getElementById("login-username").value;
       const password = document.getElementById("login-password").value;
 
-      google.script.run.withSuccessHandler(function(response){
-        console.log("Server response:", response);
-        if (response.status == "VERIFY"){
-          document.getElementById("errorMessage").style.color = "green";
-          document.getElementById("errorMessage").innerText =
-          "Verification code sent to your email.";
-          document.getElementById("verificationArea").style.display = "block";
-        }
+      google.script.run.withSuccessHandler(function(output) {
+        if (output === 'TRUE') {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              function(position) {
+                const lat = position.coords.latitude.toFixed(6);
+                const lng = position.coords.longitude.toFixed(6);
 
-        else if (response.status == "NO EMAIL FOUND") {
-          document.getElementById("errorMessage").innerText = "No email found for this user.";
+                // ✅ Save location AFTER retrieving it
+                google.script.run
+                  .withSuccessHandler(function() {
+                    alert("Check-In successful! Redirecting");
+                    const url1 = 'https://docs.google.com/forms/d/17HQob9XW0k2ZAXl2xmS8BUeZDt05g99iGNAOJZ2Rr8Q/edit';
+                    const winRef = window.open(url1);
+                    winRef ? google.script.host.close() : window.location.href = url1;
+                  })
+                  .withFailureHandler(function(error) {
+                    alert("Failed to save location: " + error.message);
+                  })
+                  .saveCheckInLocation(username, lat, lng);
+              },
+              function(error) {
+                alert("Failed to get location. Check-In not completed.");
+              }
+            );
+          } else {
+            alert("Geolocation is not supported by this browser.");
+          }
+        } else {
+          document.getElementById("errorMessage").innerText = "Username or Password Not Correct";
         }
-
-        else {
-          document.getElementById("errorMessage").innerText = "Invalid username or password.";
-        }
-
       }).checkLogin(username, password);
-    }*/
+  }
 
-    
    //to register new user with valid aku.edu email
     function registerUser() {
         const name = document.getElementById("register-username").value;

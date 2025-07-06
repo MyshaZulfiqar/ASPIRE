@@ -6,6 +6,12 @@ function doGet(e) {
 
 }
 
+function saveCheckInLocation(username, lat, lng) {
+  var url = 'https://docs.google.com/spreadsheets/d/1ZMDKncOCaFQL-wmH9mY8yPPAFZtW4n8FYHtcDNgfl0s/edit?gid=849879612#gid=849879612';
+  const sheet = SpreadsheetApp.openByUrl(url).getSheetByName("CheckInData");
+  sheet.appendRow([new Date(), username, lat, lng]);
+}
+
 function checkLogin(username, password) {
 
   var url = 'https://docs.google.com/spreadsheets/d/1ZMDKncOCaFQL-wmH9mY8yPPAFZtW4n8FYHtcDNgfl0s/edit?gid=0#gid=0';
