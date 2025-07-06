@@ -1,70 +1,92 @@
-<!--this file will be used to host-->
+<!-- This file will be used to host -->
 <!DOCTYPE html>
-<html lang ="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title> QR Scan test Code </title>
-        <script src= "https://unpkg.com/html5-qrcode"> </script>
-        <style> 
-            #scanner {
-                width: 300px;
-                margin: 10px;
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Scan Test Code</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    #scanner {
+      width: 90%;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    .btn {
+      display: block;
+      margin: 10px auto;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="scanner"></div>
+  <button class="btn" onclick="StartScan()">Start Scan</button>
+  <p id="status"></p>
+
+  <script>
+    function getLocation(callback) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            callback({
+              lat: position.coords.latitude,
+              long: position.coords.longitude
+            });
+          },
+          () => alert("Geolocation Failed")
+        );
+      } else {
+        alert("Geolocation Not Supported");
+      }
+    }
+
+    let data = null;
+
+    function StartScan() {
+      const scan = new Html5Qrcode("scanner");
+
+      scan.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText, decodedResult) => {
+          scan.stop();
+          getLocation(loc => {
+            data = {
+              code: decodedText,
+              location: loc
+            };
+
+            document.getElementById("status").innerText =
+              "Scanned: " + decodedText;
+
+            // Simple redirect to the scanned URL
+            if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
+              window.location.href = decodedText;
+            } else {
+              alert("Scanned text is not a valid URL:\n" + decodedText);
             }
-
-            .btn {
-                padding: 10;
-            }
-
-
-        </style>
-    </head>
-    <body>
-        <div id = scanner></div>
-        <button class="button" onclick="StartScan()">Start Scan</button>
-        <p id="status"></p>
-        <script>
-
-            function getLocation(callback){
-                if (navigator.geolocation){
-                    navigator.geolocation.getCurrentPosition(
-                        position =>{
-                            callback({
-                                lat: position.coords.latitude,
-                                long: position.coords.longitude
-                            });    
-                        }, 
-                    () => alert('Geolocation Failed')
-                    );
-
-                } else{
-                    alert("Geo Location Not Found")
-
-                }
-            }
-
-            let data = null;
-            function StartScan(){
-                const scan = new Html5Qrcode("scanner");
-
-                scan.start(
-
-                    {facingMode: "environment"}, 
-                    
-                    {fps: 10, qrbox: 250},
-                    
-                    (decodedText, decodedResult) => {
-                    scan.stop();
-                    data = {code:decodedText, decodedResult};
-                    document.getElementById("status").innerText = "Scanned Successfully"+decodedText;
-                    },
-
-                    (errMsg)=> {
-                        console.warn("Scanning Failed", errMsg) 
-                    }
-                );
-            }
-        </script>
-    </body>
-    
+          });
+        },
+        errMsg => {
+          console.warn("Scanning Failed", errMsg);
+        }
+      );
+    }
+  </script>
+</body>
 </html>
