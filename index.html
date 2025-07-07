@@ -39,14 +39,21 @@
   <p id="status"></p>
 
   <script>
+    function addLocation(lat, long){
+      const ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1ZMDKncOCaFQL-wmH9mY8yPPAFZtW4n8FYHtcDNgfl0s/edit?gid=0#gid=0");
+      const sheet = ss.getSheetByName("LOCATIONS");
+      sheet.appendRow([new Date(), lat, lng]);
+    }
+
     function getLocation(callback) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           position => {
             callback({
               lat: position.coords.latitude,
-              long: position.coords.longitude
+              long: position.coords.longitude  
             });
+            addLocation(lat, long);
           },
           () => alert("Geolocation Failed")
         );
