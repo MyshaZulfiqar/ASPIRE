@@ -53,7 +53,7 @@
               lat: position.coords.latitude,
               long: position.coords.longitude  
             });
-            addLocation(lat, long);
+            
           },
           () => alert("Geolocation Failed")
         );
@@ -73,11 +73,8 @@
         (decodedText, decodedResult) => {
           scan.stop();
           getLocation(loc => {
-            data = {
-              code: decodedText,
-              location: loc
-            };
-
+            data = {code: decodedText, location: loc};
+            addLocation(loc.lat, loc.long);
             document.getElementById("status").innerText =
               "Scanned: " + decodedText;
 
